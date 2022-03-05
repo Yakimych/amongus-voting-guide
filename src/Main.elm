@@ -94,10 +94,10 @@ getDecision numberOfPlayers numberOfImpostors lightsAreOn =
             { decisionType = OkToVote, reason = "With 2 impostors, it's ok to vote based off a minor suspicion. Even if a crewmate is voted off, the impostor won't 'automatically' win with best play (as they would on 3 with lights on)." }
 
         ( _, _, _ ) ->
-            { decisionType = OkToVote, reason = "TODO" }
+            { decisionType = NotApplicable, reason = "" }
 
 
-decisionTypeToDiv votingDecision showReason =
+decisionTypeToText votingDecision showReason =
     let
         reasonDiv =
             div [ style "font-size" "10px" ]
@@ -112,16 +112,31 @@ decisionTypeToDiv votingDecision showReason =
     in
     case votingDecision.decisionType of
         DoNotVote ->
-            div [ style "background-color" "pink" ] [ text "Do NOT vote", reasonDiv ]
+            [ text "Do NOT vote", reasonDiv ]
 
         OkToVote ->
-            div [ style "background-color" "lightgray" ] [ text "OK to vote", reasonDiv ]
+            [ text "OK to vote", reasonDiv ]
 
         MustVote ->
-            div [ style "background-color" "lightgreen" ] [ text "Must Vote!", reasonDiv ]
+            [ text "Must Vote!", reasonDiv ]
 
         NotApplicable ->
-            div [ style "background-color" "white" ] [ text "N/A", reasonDiv ]
+            [ text "N/A", reasonDiv ]
+
+
+decisionTypeToColor votingDecision =
+    case votingDecision.decisionType of
+        DoNotVote ->
+            "pink"
+
+        OkToVote ->
+            "lightgray"
+
+        MustVote ->
+            "lightgreen"
+
+        NotApplicable ->
+            "white"
 
 
 update : Msg -> Model -> Model
@@ -152,29 +167,41 @@ update msg model =
             { model | expandReasons = not model.expandReasons }
 
 
-tableCellStyle =
-    [ style "border" "1px solid black", style "padding" "5px" ]
+tableCellStyle backgroundColor =
+    [ style "border" "1px solid black", style "padding" "5px", style "background-color" backgroundColor ]
 
 
-highlightedTableCellStyle =
-    [ style "border" "2px solid red", style "padding" "4px" ]
+whiteTableCellStyle =
+    tableCellStyle "white"
 
 
-getTableCellStyle model forNumberOfPlayers forNumberOfImpostors forLights =
+highlightedTableCellStyle backgroundColor =
+    [ style "border" "2px solid red", style "padding" "4px", style "background-color" backgroundColor ]
+
+
+getTableCellStyle model forNumberOfPlayers forNumberOfImpostors forLights votingDecision =
     if forNumberOfPlayers == model.numberOfPlayers && forNumberOfImpostors == model.numberOfImpostors && forLights == model.lightsAreOn then
-        highlightedTableCellStyle
+        highlightedTableCellStyle (decisionTypeToColor votingDecision)
 
     else
-        tableCellStyle
+        tableCellStyle (decisionTypeToColor votingDecision)
+
+
+getTableCell model players impostors lights =
+    let
+        decision =
+            getDecision players impostors lights
+    in
+    td (getTableCellStyle model players impostors lights decision) (decisionTypeToText decision model.expandReasons)
 
 
 tableRowForPlayers model players =
     tr []
-        [ td tableCellStyle [ text (String.fromInt players) ]
-        , td (getTableCellStyle model players 2 True) [ decisionTypeToDiv (getDecision players 2 True) model.expandReasons ]
-        , td (getTableCellStyle model players 1 True) [ decisionTypeToDiv (getDecision players 1 True) model.expandReasons ]
-        , td (getTableCellStyle model players 2 False) [ decisionTypeToDiv (getDecision players 2 False) model.expandReasons ]
-        , td (getTableCellStyle model players 1 False) [ decisionTypeToDiv (getDecision players 1 False) model.expandReasons ]
+        [ td whiteTableCellStyle [ text (String.fromInt players) ]
+        , getTableCell model players 2 True
+        , getTableCell model players 1 True
+        , getTableCell model players 2 False
+        , getTableCell model players 1 False
         ]
 
 
@@ -184,11 +211,11 @@ decisionTable model =
         [ table []
             [ thead []
                 [ tr []
-                    [ td tableCellStyle [ text "Players" ]
-                    , td tableCellStyle [ text "2 impostors" ]
-                    , td tableCellStyle [ text "1 impostor" ]
-                    , td tableCellStyle [ text "2 impostors (off)" ]
-                    , td tableCellStyle [ text "1 impostor (off)" ]
+                    [ td whiteTableCellStyle [ text "Players" ]
+                    , td whiteTableCellStyle [ text "2 impostors" ]
+                    , td whiteTableCellStyle [ text "1 impostor" ]
+                    , td whiteTableCellStyle [ text "2 impostors (off)" ]
+                    , td whiteTableCellStyle [ text "1 impostor (off)" ]
                     ]
                 ]
             , tbody [] ([ 10, 9, 8, 7, 6, 5, 4, 3 ] |> List.map (tableRowForPlayers model))

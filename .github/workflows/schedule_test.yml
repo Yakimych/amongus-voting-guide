@@ -1,7 +1,7 @@
 name: Scheduled task test
 on:
   schedule:
-    - cron: "* * * * *"
+    - cron: "0 * * * *"
 jobs:
   Test-Job:
     runs-on: ubuntu-latest

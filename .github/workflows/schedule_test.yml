@@ -1,6 +1,5 @@
 name: Scheduled task test
 on:
-  workflow_dispatch: {}
   schedule:
     - cron: "* * * * *"
 jobs:

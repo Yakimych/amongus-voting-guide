@@ -1,0 +1,10 @@
+name: Scheduled task test
+on:
+  schedule:
+    - cron: "* * * * *"
+jobs:
+  Test-Job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print
+        run: echo "Test scheduled job"

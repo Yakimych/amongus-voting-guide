@@ -1,0 +1,11 @@
+name: Scheduled task test
+on:
+  workflow_dispatch: {}
+  schedule:
+    - cron: "* * * * *"
+jobs:
+  Test-Job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print
+        run: echo "Test scheduled job"
